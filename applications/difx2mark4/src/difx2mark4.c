@@ -668,7 +668,7 @@ struct CommandLineOptions *parseCommandLine(int argc, char **argv)
                     {
                     opts->localdir = 1;
                     }
-                else if(strcmp (argv[i], "--case-unchanged") == 0 ||
+                else if(strcmp (argv[i], "--case-keep") == 0 ||
                         strcmp (argv[i], "-c") == 0)
                     {
                         i++;
