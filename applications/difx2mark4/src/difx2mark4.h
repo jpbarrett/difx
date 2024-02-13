@@ -64,6 +64,8 @@ struct CommandLineOptions
     int raw;
     char fgroups[16];
     char bandwidth[8];
+    int enforceStationCodeLowercase;
+    char unchangedStationCodes[MAX_STN][2];
     };
 
 typedef struct 

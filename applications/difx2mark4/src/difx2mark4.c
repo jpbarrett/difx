@@ -72,6 +72,8 @@ static int usage (const char *pgm)
     fprintf (stderr, "  -w <bandwidth in MHz>     include data only for this bandwidth\n");
     fprintf (stderr, "  -l or --localdir          allow *.calc, *.im and *.difx to be found\n");
     fprintf (stderr, "                            in the same directory as *.input files\n");
+    fprintf (stderr, "  -c or --case-keep <code>  Do not force 2-char station code to have\n");
+    fprintf (stderr, "                            the second character in lower-case.\n");
     fprintf (stderr, "\n");
 
     return 0;
@@ -487,6 +489,14 @@ struct CommandLineOptions *newCommandLineOptions()
     opts->phaseCentre = 0;
     opts->raw = 0;
 
+    opts->enforceStationCodeLowercase = 1; //true
+    for(int i=0; i<MAX_STN; i++)
+    {
+        opts->unchangedStationCodes[i][0] = '\0';
+        opts->unchangedStationCodes[i][1] = '\0';
+    }
+    
+
     return opts;
     }
 
@@ -511,7 +521,7 @@ void deleteCommandLineOptions(struct CommandLineOptions *opts)
 struct CommandLineOptions *parseCommandLine(int argc, char **argv)
     {
     struct CommandLineOptions *opts;
-    int i, j, l;
+    int i, j, l, m;
     glob_t globbuf;
 
     opts = newCommandLineOptions();
@@ -657,6 +667,28 @@ struct CommandLineOptions *parseCommandLine(int argc, char **argv)
                         strcmp (argv[i], "-l") == 0)
                     {
                     opts->localdir = 1;
+                    }
+                else if(strcmp (argv[i], "--case-unchanged") == 0 ||
+                        strcmp (argv[i], "-c") == 0)
+                    {
+                        i++;
+                        opts->enforceStationCodeLowercase = 0;
+                        if( strlen(argv[i]) == 2)
+                        {
+                            for(m=0;m<MAX_STN;m++)
+                            {
+                                if(opts->unchangedStationCodes[m][0] == '\0')
+                                {
+                                    opts->unchangedStationCodes[m][0] = argv[i][0];
+                                    opts->unchangedStationCodes[m][1] = argv[i][1];
+                                    break;
+                                }
+                            }
+                        }
+                        else 
+                        {
+                            printf ("Cannot parse station code passed by '-c' option %s, ignoring\n", argv[i]);
+                        }
                     }
                 else
                     {

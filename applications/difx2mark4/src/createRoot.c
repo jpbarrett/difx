@@ -26,6 +26,8 @@ int createRoot (DifxInput *D,           // difx input structure pointer
         j,
         k,
         n,
+        m,
+        do_stn_lowercase,
         match,
         current_block,
         numchan = 0,
@@ -369,9 +371,34 @@ int createRoot (DifxInput *D,           // difx input structure pointer
                             if (D->scan[scanId].im != NULL 
                              && D->scan[scanId].im[n] != 0)
                                 {
-                                    // FIXME - generate antenna name from station
-                                sprintf (antnam, ":%c%c", D->antenna[n].name[0], 
-                                                 tolower (D->antenna[n].name[1]));
+                                    do_stn_lowercase = 1; //default behavior is to enforce that 2nd char in station code is lower case
+                                    if( opts->enforceStationCodeLowercase == 0)
+                                    {
+                                        // This behavior is only enabled if the '-c' option has been passed, and the station code 
+                                        // that the user desires to be left unchanged (in DiFX style uppercase) has been specified
+                                        for(m=0; m<MAX_STN;m++)
+                                        {
+                                            if(opts->unchangedStationCodes[m][0] == '\0'){break;} //reached end of list
+                                            else 
+                                            {
+                                                if(D->antenna[n].name[0] == opts->unchangedStationCodes[m][0] &&
+                                                  (D->antenna[n].name[1]) == opts->unchangedStationCodes[m][1])
+                                                {
+                                                    do_stn_lowercase = 0;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if(do_stn_lowercase)
+                                    {
+                                        sprintf (antnam, ":%c%c", D->antenna[n].name[0], tolower (D->antenna[n].name[1]));
+                                    }
+                                    else 
+                                    {
+                                        sprintf (antnam, ":%c%c", D->antenna[n].name[0], (D->antenna[n].name[1]));
+                                        printf("      Did not lower case-ify the station code: %c%c \n", antnam[1], antnam[2]);
+                                    }
+                                
                                 fprintf (fout, "    ref $FREQ = ant%02d%s;\n", n, antnam);
                                     // add antenna to appropriate trax statement
                                 if (antbits[n] == 1)
